@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 const blacklistTokenModel = require('../models/blacklistTokenModel');
+const axios=require('axios');
 
 async function authMiddleware(req, res, next) {
     try {
@@ -24,8 +25,23 @@ async function authMiddleware(req, res, next) {
             return res.status(401).json({ message: 'Invalid token' });
         }
 
-        // Store user ID for ride operations
-        req.user = { _id: decoded.userId };
+        // Verify user exists by calling user service
+        try {
+            const response = await axios.get(`${process.env.SERVICE_URL}/user/${decoded.userId}`, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+            
+            const user = response.data.user;
+            
+            // Store user info for ride operations
+            req.user = { _id: decoded.userId, ...user };
+        } catch (error) {
+            console.log("error is ", error)
+            return res.status(401).json({ message: 'User not found or invalid token' });
+        }
+
         next();
     } catch (err) {
         return res.status(401).json({ message: 'Authentication failed', error: err.message });

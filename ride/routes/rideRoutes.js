@@ -5,7 +5,7 @@ const rideController = require('../controller/rideController');
 const router = express.Router();
 
 // Create a new ride (requires user authentication)
-router.post('/create', authMiddleware, rideController.createRide);
+router.post('/create-ride', authMiddleware, rideController.createRide);
 
 // Get all rides
 router.get('/', rideController.getRides);

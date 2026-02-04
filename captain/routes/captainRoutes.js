@@ -11,7 +11,7 @@ router.post('/login', require('../controller/captainController').loginCaptain);
 router.post('/logout', require('../controller/captainController').logoutCaptain);
 router.get('/profile', authMiddleware, require('../controller/captainController').getCaptainProfile);
 router.put('/toggle-availability', authMiddleware, require('../controller/captainController').toggleAvailability);
-
-
+router.get('/new-ride',authMiddleware, require('../controller/captainController').waitForNewRide);
+router.post('/accept-ride', authMiddleware, require('../controller/captainController').acceptRide);
 
 module.exports = router;

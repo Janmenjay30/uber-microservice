@@ -1,4 +1,7 @@
 const rideModel = require('../models/rideModel');
+const mongoose = require('mongoose');
+const {publishToExchange} = require('../services/rabbit');
+
 
 module.exports.createRide = async (req, res) => {
     try {
@@ -18,6 +21,22 @@ module.exports.createRide = async (req, res) => {
         });
 
         await newRide.save();
+        
+        try{
+
+            // Publish new ride event to RabbitMQ for captain service
+            await publishToExchange("new_ride", "ride.created", {
+                rideId: newRide._id,
+                userId: newRide.userId,
+                pickup: newRide.pickup,
+                destination: newRide.destination,
+                fare: newRide.fare,
+                status: newRide.status,
+                createdAt: newRide.createdAt
+            });
+        }catch(err){
+            console.error('Failed to publish ride.created event:', err);
+        }
         res.status(201).json({ message: 'Ride created successfully', ride: newRide });
     } catch (error) {
         res.status(500).json({ message: 'Server error', error: error.message });
